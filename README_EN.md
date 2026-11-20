@@ -60,7 +60,26 @@ chmod +x start.sh
 
 #### One-Click Start on Windows (Git Bash)
 
-`start.sh` is a bash script and cannot be run directly in PowerShell or CMD. On Windows, use **Git Bash** for one-click startup (bundled with Git for Windows):
+`start.sh` is a bash script and cannot be run directly in PowerShell or CMD. On Windows, use **Git Bash** for one-click startup (bundled with Git for Windows).
+
+##### 0. Dependency Preparation Before Running (Required on First Run)
+
+`start.sh` validates the following dependencies at startup **but does not install them automatically** — it exits immediately if any one is missing, so install these base prerequisites in PowerShell or CMD before the first run:
+
+| Dependency | Install Command (PowerShell / CMD) | Notes |
+|------------|------------------------------------|-------|
+| **Git for Windows** (includes Git Bash) | `winget install Git.Git` | Provides the `bash` interpreter; prerequisite for running `start.sh` |
+| **Python 3.10+** | `winget install Python.Python.3.11` | Provides the `python` command |
+| **Node.js + npm (LTS)** | `winget install OpenJS.NodeJS.LTS` | `Node v20.18.3` verified; used for frontend build |
+| **Playwright + Chromium** | `py -m pip install playwright`<br>`py -m playwright install chromium` | Browser-automation engine for the crawler |
+| **Chrome or Edge browser** | `winget install Google.Chrome`<br>or `winget install Microsoft.Edge` | Playwright drives the local browser kernel |
+
+> Tips:
+> - After installation, **reopen** PowerShell / Git Bash so the updated `PATH` takes effect.
+> - Verify each item with `python --version`, `node --version`, `py -m playwright --version`.
+> - Project runtime dependencies (Python packages in `requirements.txt`, npm packages in `web-ui/package.json`) **do NOT need manual installation** — `start.sh` runs `pip install` and `npm install` automatically in steps 3/4.
+
+##### 1. Startup Steps
 
 1. Right-click in the project root directory → `Open Git Bash here` (or type `bash` in File Explorer's address bar and press Enter).
 2. In the opened Git Bash terminal, run:
@@ -147,6 +166,40 @@ docker compose down
 </details>
 
 ## Developer Guide
+
+### One-Click Dependency Install (Recommended)
+
+The project ships with `install.sh` (Linux / macOS / WSL) and `install.ps1` (Windows PowerShell) one-click install scripts that auto-detect and install Git / Python / Node.js / browser / Playwright / Chromium plus the project Python dependencies (`requirements.txt`). The scripts are **idempotent** — already-installed dependencies are skipped.
+
+#### Windows (PowerShell)
+
+Open PowerShell in the project root and run:
+
+```powershell
+# If execution is blocked by policy, relax it first (current user only)
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned -Force
+
+# One-click install all dependencies
+.\install.ps1
+```
+
+The script uses `winget` to install Git / Python / Node.js / Chrome, then runs `pip install playwright` + `playwright install chromium` + `pip install -r requirements.txt` automatically, and finally creates `.env` from `.env.example`.
+
+#### Linux / macOS / WSL (Bash)
+
+In the project root, run:
+
+```bash
+chmod +x install.sh
+./install.sh
+```
+
+The script auto-detects the distro (Debian / RHEL / Arch / macOS) and uses the corresponding package manager to install Python / Node.js / browser, then installs Playwright + Chromium + project dependencies and prepares the config files.
+
+> After installation:
+> 1. **Reopen the terminal** so `PATH` picks up the new tools
+> 2. Edit `.env` to fill in `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL_NAME` and other required keys
+> 3. Run the "One-Click Start" below to launch the service
 
 ### Local Development
 

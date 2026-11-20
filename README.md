@@ -134,8 +134,41 @@ docker compose up -d
 ```bash
 git clone https://github.com/Usagi-org/ai-goofish-monitor
 cd ai-goofish-monitor
-cp .env.example .env
 ```
+
+### 一键安装依赖（推荐）
+
+项目提供了 `install.sh`（Linux / macOS / WSL）和 `install.ps1`（Windows PowerShell）两个一键安装脚本，会自动检测并安装 Git / Python / Node.js / 浏览器 / Playwright / Chromium 及项目 Python 依赖（`requirements.txt`）。脚本**幂等可重复执行**，已安装的依赖会自动跳过。
+
+#### Windows（PowerShell）
+
+在项目根目录打开 PowerShell，执行：
+
+```powershell
+# 若执行被策略拦截，先解除（仅当前用户）
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned -Force
+
+# 一键安装所有依赖
+.\install.ps1
+```
+
+脚本会通过 `winget` 安装 Git / Python / Node.js / Chrome，并自动执行 `pip install playwright` + `playwright install chromium` + `pip install -r requirements.txt`，最后从 `.env.example` 创建 `.env`。
+
+#### Linux / macOS / WSL（Bash）
+
+在项目根目录执行：
+
+```bash
+chmod +x install.sh
+./install.sh
+```
+
+脚本会自动识别发行版（Debian / RHEL / Arch / macOS），用对应包管理器安装 Python / Node.js / 浏览器，再安装 Playwright + Chromium + 项目依赖，并准备配置文件。
+
+> 安装完成后：
+> 1. **重开终端**让 `PATH` 生效
+> 2. 编辑 `.env` 填写 `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL_NAME` 等必填项
+> 3. 执行下方的「一键启动」启动服务
 
 ### 一键启动
 
@@ -148,7 +181,26 @@ chmod +x start.sh
 
 #### Windows 一键启动（Git Bash）
 
-`start.sh` 是 bash 脚本，PowerShell 或 CMD 无法直接运行。在 Windows 上推荐使用 **Git Bash** 一键启动（安装 Git for Windows 后自带）：
+`start.sh` 是 bash 脚本，PowerShell 或 CMD 无法直接运行。在 Windows 上推荐使用 **Git Bash** 一键启动（安装 Git for Windows 后自带）。
+
+##### 0. 运行前的依赖准备（首次必做）
+
+`start.sh` 启动时会检查下列依赖是否就绪，**但不会自动安装**——缺失任一项会直接报错退出，所以首次运行前请先在 PowerShell 或 CMD 中安装好以下基础环境：
+
+| 依赖 | 安装命令（PowerShell / CMD） | 说明 |
+|------|------------------------------|------|
+| **Git for Windows**（含 Git Bash） | `winget install Git.Git` | 提供 `bash` 解释器，是运行 `start.sh` 的前提 |
+| **Python 3.10+** | `winget install Python.Python.3.11` | 提供 `python` 命令 |
+| **Node.js + npm (LTS)** | `winget install OpenJS.NodeJS.LTS` | 本地验证可用 `Node v20.18.3`；用于前端构建 |
+| **Playwright + Chromium** | `py -m pip install playwright`<br>`py -m playwright install chromium` | 爬虫浏览器自动化内核 |
+| **Chrome 或 Edge 浏览器** | `winget install Google.Chrome`<br>或 `winget install Microsoft.Edge` | Playwright 会调用本机浏览器内核 |
+
+> 提示：
+> - 安装完成后请**重新打开** PowerShell / Git Bash 终端，让 `PATH` 生效。
+> - 可用 `python --version`、`node --version`、`py -m playwright --version` 逐项验证。
+> - 项目运行依赖（`requirements.txt` 中的 Python 包、`web-ui/package.json` 中的 npm 包）**不需要手动安装**，`start.sh` 会在步骤 3/4 中自动执行 `pip install` 与 `npm install`。
+
+##### 1. 启动步骤
 
 1. 在项目根目录右键 → `Open Git Bash here`（或在资源管理器地址栏输入 `bash` 回车）。
 2. 在打开的 Git Bash 终端中执行：
