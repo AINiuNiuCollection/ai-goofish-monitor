@@ -43,7 +43,7 @@ docker compose up -d
 
 ```
 
-- 默认 Web UI 地址：`http://127.0.0.1:8000`
+- 默认 Web UI 地址：`http://127.0.0.1:8801`
 - Docker 镜像已内置 Chromium，无需宿主机额外安装浏览器。
 - 官方镜像地址：`ghcr.io/usagi-org/ai-goofish:latest`
 - 更新镜像：`docker compose pull && docker compose up -d`
@@ -80,7 +80,7 @@ docker compose up -d
 
 ### 第一次使用
 
-1. 打开默认 Web UI `http://127.0.0.1:8000` 并登录。
+1. 打开默认 Web UI `http://127.0.0.1:8801` 并登录。
 2. 进入“闲鱼账号管理”，使用 [Chrome 扩展](https://chromewebstore.google.com/detail/xianyu-login-state-extrac/eidlpfjiodpigmfcahkmlenhppfklcoa) 导出并粘贴闲鱼登录态 JSON。
 3. 登录态文件会保存到 `state/` 目录，例如 `state/acc_1.json`。
 4. 回到“任务管理”，创建任务并绑定账号后即可运行。
@@ -146,13 +146,28 @@ chmod +x start.sh
 
 `start.sh` 会先检查 Playwright CLI 和浏览器前置条件；在前置条件满足后自动安装项目依赖、构建前端、复制构建产物并启动后端。
 
+#### Windows 一键启动（Git Bash）
+
+`start.sh` 是 bash 脚本，PowerShell 或 CMD 无法直接运行。在 Windows 上推荐使用 **Git Bash** 一键启动（安装 Git for Windows 后自带）：
+
+1. 在项目根目录右键 → `Open Git Bash here`（或在资源管理器地址栏输入 `bash` 回车）。
+2. 在打开的 Git Bash 终端中执行：
+
+```bash
+./start.sh
+```
+
+> 说明：Git Bash 自带 `bash` / `cp` / `uname` 等命令，脚本内部已识别 `MINGW*|MSYS*|CYGWIN*` 环境，可完整跑通环境检查、依赖安装、前端构建与后端启动。
+>
+> 若需在 PowerShell / CMD 中启动，请改用下方「手动启动」分步执行；也可通过 WSL 运行 `wsl bash start.sh`。
+
 ### 手动启动
 
 ```bash
 # 后端
 python -m src.app
 # 或
-uvicorn src.app:app --host 0.0.0.0 --port 8000 --reload
+uvicorn src.app:app --host 0.0.0.0 --port 8801 --reload
 
 # 前端
 cd web-ui
@@ -163,10 +178,10 @@ npm run dev
 - FastAPI 启动时会自动初始化 SQLite，并在首次启动时尝试导入旧的 `config.json/jsonl/price_history`
 - `spider_v2.py` 默认从 SQLite 读取任务；只有显式传入 `--config <path>` 时才会走 JSON 配置兼容模式
 - 默认数据库路径为 `data/app.sqlite3`
-- Vite 开发服务器会将 `/api`、`/auth`、`/ws` 代理到 `http://127.0.0.1:8000`。
+- Vite 开发服务器会将 `/api`、`/auth`、`/ws` 代理到 `http://127.0.0.1:8801`。
 - `npm run build` 先生成 `web-ui/dist/`，`start.sh` 再复制到仓库根目录 `dist/`。
 - FastAPI 负责提供根目录 `dist/index.html` 和 `dist/assets/`。
-- `./start.sh` 默认输出访问地址 `http://localhost:8000` 和 API 文档 `http://localhost:8000/docs`。
+- `./start.sh` 默认输出访问地址 `http://localhost:8801` 和 API 文档 `http://localhost:8801/docs`。
 
 ### 测试与校验
 
@@ -198,7 +213,7 @@ cd web-ui && npm run build
 - `OPENAI_API_KEY` / `OPENAI_BASE_URL` / `OPENAI_MODEL_NAME`：AI 模型接入必填项。
 - `PROXY_URL`：为 AI 请求单独指定 HTTP/SOCKS5 代理。
 - `RUN_HEADLESS`：是否以无头模式运行爬虫；Docker 中应保持 `true`。
-- `SERVER_PORT`：后端监听端口，默认 `8000`。
+- `SERVER_PORT`：后端监听端口，默认 `8801`。
 - `LOGIN_IS_EDGE`：本地环境可切换为 Edge 内核；Docker 镜像未内置 Edge，容器内会固定使用 Chromium。
 - `PCURL_TO_MOBILE`：是否将 PC 商品链接转换为移动端链接。
 
