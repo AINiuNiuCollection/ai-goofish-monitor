@@ -23,7 +23,7 @@
 ![结果查看](static/img_2.png)
 ![通知推送](static/img_3.png)
 
-## 🐳 Docker 部署（推荐）
+## 🐳 Docker 部署（推荐）  
 
 ```bash
 git clone https://github.com/Usagi-org/ai-goofish-monitor && cd ai-goofish-monitor
